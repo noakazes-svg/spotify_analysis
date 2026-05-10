@@ -1,0 +1,33 @@
+# Web framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# Database (SQLite for dev, swap to asyncpg for prod)
+sqlalchemy==2.0.36
+aiosqlite==0.20.0
+greenlet==3.5.0
+
+# HTTP client
+httpx==0.28.0
+
+# Auth
+PyJWT==2.10.0
+
+# Config
+pydantic-settings==2.6.1
+python-dotenv==1.0.1
+
+# AI / NLP (Phase 2 — install when ready)
+# openai==1.57.0
+# spacy==3.8.3
+# sentence-transformers==3.3.1
+# scikit-learn==1.5.2
+# pandas==2.2.3
+
+# Lyrics (Phase 2)
+# lyricsgenius==3.0.1
+# beautifulsoup4==4.12.3
+
+# Shareable cards (Phase 2)
+# Pillow==11.0.0

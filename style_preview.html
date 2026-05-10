@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SoundSelf — Style Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: white; font-family: system-ui, sans-serif; padding: 40px; }
+  h1 { text-align: center; color: #666; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1200px; margin: 0 auto; }
+  .label { text-align: center; font-size: 12px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-top: 12px; }
+
+  /* ── Style A: Linear / Vercel ─────────── */
+  .style-a { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 24px; font-family: 'Inter', system-ui, sans-serif; }
+  .style-a .nav { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #1a1a1a; margin-bottom: 24px; }
+  .style-a .nav-brand { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .style-a .nav-user { font-size: 12px; color: #444; }
+  .style-a h2 { font-size: 22px; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .style-a .sub { font-size: 12px; color: #444; margin-bottom: 20px; }
+  .style-a .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .style-a .stat { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 14px; }
+  .style-a .stat-val { font-size: 24px; font-weight: 600; color: #fff; letter-spacing: -1px; }
+  .style-a .stat-lbl { font-size: 11px; color: #444; margin-top: 2px; }
+  .style-a .bars { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px; }
+  .style-a .bar-title { font-size: 11px; color: #444; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px; }
+  .style-a .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .style-a .bar-name { font-size: 11px; color: #666; width: 70px; }
+  .style-a .bar-track { flex: 1; height: 3px; background: #1e1e1e; border-radius: 2px; overflow: hidden; }
+  .style-a .bar-fill { height: 100%; border-radius: 2px; }
+  .style-a .bar-pct { font-size: 11px; color: #444; width: 30px; text-align: right; }
+  .style-a .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .style-a .tag { font-size: 11px; color: #555; background: #111; border: 1px solid #1e1e1e; border-radius: 4px; padding: 4px 8px; }
+
+  /* ── Style B: Spotify Wrapped ─────────── */
+  .style-b { background: #0a0a1a; border-radius: 12px; padding: 0; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
+  .style-b .hero { background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 50%, #06b6d4 100%); padding: 28px 24px; }
+  .style-b .hero-sub { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.7; margin-bottom: 8px; }
+  .style-b .hero-title { font-size: 32px; font-weight: 900; line-height: 1.1; letter-spacing: -1px; }
+  .style-b .hero-name { font-size: 13px; opacity: 0.6; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+  .style-b .body { padding: 20px 24px; }
+  .style-b .big-stats { display: flex; gap: 0; margin-bottom: 20px; }
+  .style-b .big-stat { flex: 1; text-align: center; padding: 16px; }
+  .style-b .big-stat:first-child { border-right: 1px solid #1a1a2e; }
+  .style-b .big-val { font-size: 36px; font-weight: 900; letter-spacing: -2px; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .style-b .big-lbl { font-size: 10px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .style-b .section-title { font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .style-b .genre-list { display: flex; flex-direction: column; gap: 8px; }
+  .style-b .genre-row { display: flex; align-items: center; gap: 12px; }
+  .style-b .genre-num { font-size: 11px; color: #333; width: 16px; }
+  .style-b .genre-bar-wrap { flex: 1; height: 4px; background: #1a1a2e; border-radius: 2px; overflow: hidden; }
+  .style-b .genre-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #8b5cf6, #3b82f6); }
+  .style-b .genre-name { font-size: 11px; color: #888; width: 80px; text-align: right; }
+
+  /* ── Style C: Minimal editorial ─────────── */
+  .style-c { background: #f5f3ef; border-radius: 12px; padding: 28px; font-family: 'Georgia', serif; color: #1a1a1a; }
+  .style-c .nav { display: flex; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid #d4cfc8; margin-bottom: 24px; }
+  .style-c .nav-brand { font-family: system-ui; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #1a1a1a; }
+  .style-c .nav-date { font-family: system-ui; font-size: 11px; color: #999; }
+  .style-c h2 { font-size: 28px; font-weight: 400; color: #1a1a1a; margin-bottom: 4px; line-height: 1.2; }
+  .style-c .sub { font-family: system-ui; font-size: 12px; color: #999; margin-bottom: 20px; }
+  .style-c .inline-stats { font-family: system-ui; font-size: 12px; color: #555; margin-bottom: 20px; }
+  .style-c .inline-stats strong { color: #1a1a1a; font-size: 18px; font-weight: 700; margin-right: 3px; }
+  .style-c .divider { border: none; border-top: 1px solid #d4cfc8; margin: 16px 0; }
+  .style-c .section-lbl { font-family: system-ui; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
+  .style-c .genre-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .style-c .pill { font-family: system-ui; font-size: 11px; background: #ede9e2; color: #555; padding: 5px 10px; border-radius: 20px; }
+  .style-c .c-bars { display: flex; flex-direction: column; gap: 10px; }
+  .style-c .c-bar-row { display: flex; align-items: center; gap: 10px; }
+  .style-c .c-bar-name { font-family: system-ui; font-size: 11px; color: #888; width: 65px; }
+  .style-c .c-bar-track { flex: 1; height: 2px; background: #ddd; border-radius: 1px; }
+  .style-c .c-bar-fill { height: 100%; background: #1a1a1a; border-radius: 1px; }
+  .style-c .c-bar-val { font-family: system-ui; font-size: 11px; color: #999; width: 30px; text-align: right; }
+
+  /* ── Style D: Data viz / startup ─────────── */
+  .style-d { background: #080b14; border: 1px solid #0f1829; border-radius: 12px; padding: 24px; font-family: 'Inter', system-ui, sans-serif; }
+  .style-d .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .style-d .nav-brand { font-size: 12px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; }
+  .style-d .nav-pill { font-size: 10px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; padding: 3px 8px; border-radius: 20px; }
+  .style-d h2 { font-size: 18px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+  .style-d .sub { font-size: 11px; color: #334155; margin-bottom: 18px; }
+  .style-d .top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .style-d .card { background: #0d1526; border: 1px solid #0f2040; border-radius: 8px; padding: 14px; }
+  .style-d .card-val { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+  .style-d .card-lbl { font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .style-d .radar-mock { width: 100%; height: 80px; position: relative; margin-bottom: 16px; }
+  .style-d .radar-svg { width: 100%; height: 80px; }
+  .style-d .metric-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .style-d .metric-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .style-d .metric-name { font-size: 11px; color: #475569; width: 65px; }
+  .style-d .metric-bar { flex: 1; height: 3px; background: #0f2040; border-radius: 2px; overflow: hidden; }
+  .style-d .metric-fill { height: 100%; border-radius: 2px; }
+  .style-d .metric-val { font-size: 10px; color: #334155; width: 28px; text-align: right; }
+</style>
+</head>
+<body>
+<h1>SoundSelf — UI Style Options</h1>
+<div class="grid">
+
+  <!-- Style A: Linear / Vercel -->
+  <div>
+    <div class="style-a">
+      <div class="nav">
+        <span class="nav-brand">SoundSelf</span>
+        <span class="nav-user">Noa Kazes · Sign out</span>
+      </div>
+      <h2>Music Intelligence</h2>
+      <div class="sub">Your listening portrait · May 2026</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val">147</div><div class="stat-lbl">Unique tracks</div></div>
+        <div class="stat"><div class="stat-val">38</div><div class="stat-lbl">Genres</div></div>
+        <div class="stat"><div class="stat-val">12%</div><div class="stat-lbl">Discovery</div></div>
+      </div>
+      <div class="bars">
+        <div class="bar-title">Audio Profile</div>
+        <div class="bar-row"><span class="bar-name">Energy</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#fff"></div></div><span class="bar-pct">82%</span></div>
+        <div class="bar-row"><span class="bar-name">Danceability</span><div class="bar-track"><div class="bar-fill" style="width:67%;background:#fff"></div></div><span class="bar-pct">67%</span></div>
+        <div class="bar-row"><span class="bar-name">Positivity</span><div class="bar-track"><div class="bar-fill" style="width:53%;background:#fff"></div></div><span class="bar-pct">53%</span></div>
+        <div class="bar-row"><span class="bar-name">Acousticness</span><div class="bar-track"><div class="bar-fill" style="width:31%;background:#fff"></div></div><span class="bar-pct">31%</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag">pop</span><span class="tag">indie pop</span><span class="tag">alternative</span><span class="tag">hip-hop</span><span class="tag">r&amp;b</span>
+      </div>
+    </div>
+    <div class="label">A — Linear / Vercel</div>
+  </div>
+
+  <!-- Style B: Spotify Wrapped -->
+  <div>
+    <div class="style-b">
+      <div class="hero">
+        <div class="hero-sub">Your music portrait</div>
+        <div class="hero-title">YOUR<br>UNIVERSE</div>
+        <div class="hero-name">Noa Kazes · May 2026</div>
+      </div>
+      <div class="body">
+        <div class="big-stats">
+          <div class="big-stat"><div class="big-val">147</div><div class="big-lbl">Tracks</div></div>
+          <div class="big-stat"><div class="big-val">38</div><div class="big-lbl">Genres</div></div>
+        </div>
+        <div class="section-title">Top Genres</div>
+        <div class="genre-list">
+          <div class="genre-row"><span class="genre-num">1</span><div class="genre-bar-wrap"><div class="genre-bar" style="width:100%"></div></div><span class="genre-name">pop</span></div>
+          <div class="genre-row"><span class="genre-num">2</span><div class="genre-bar-wrap"><div class="genre-bar" style="width:76%"></div></div><span class="genre-name">indie pop</span></div>
+          <div class="genre-row"><span class="genre-num">3</span><div class="genre-bar-wrap"><div class="genre-bar" style="width:58%"></div></div><span class="genre-name">alternative</span></div>
+          <div class="genre-row"><span class="genre-num">4</span><div class="genre-bar-wrap"><div class="genre-bar" style="width:41%"></div></div><span class="genre-name">hip-hop</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="label">B — Spotify Wrapped style</div>
+  </div>
+
+  <!-- Style C: Editorial / Notion -->
+  <div>
+    <div class="style-c">
+      <div class="nav">
+        <span class="nav-brand">SoundSelf</span>
+        <span class="nav-date">May 2026</span>
+      </div>
+      <h2>Noa Kazes</h2>
+      <div class="sub">Music listening portrait</div>
+      <div class="inline-stats">
+        <strong>147</strong>unique tracks &nbsp;·&nbsp; <strong>38</strong>genres &nbsp;·&nbsp; <strong>2010s</strong>dominant decade
+      </div>
+      <hr class="divider">
+      <div class="section-lbl">Top Genres</div>
+      <div class="genre-pills">
+        <span class="pill">pop</span><span class="pill">indie pop</span><span class="pill">alternative</span><span class="pill">hip-hop</span><span class="pill">r&amp;b</span><span class="pill">soul</span>
+      </div>
+      <div class="section-lbl">Audio Dimensions</div>
+      <div class="c-bars">
+        <div class="c-bar-row"><span class="c-bar-name">Energy</span><div class="c-bar-track"><div class="c-bar-fill" style="width:82%"></div></div><span class="c-bar-val">82</span></div>
+        <div class="c-bar-row"><span class="c-bar-name">Dance</span><div class="c-bar-track"><div class="c-bar-fill" style="width:67%"></div></div><span class="c-bar-val">67</span></div>
+        <div class="c-bar-row"><span class="c-bar-name">Positivity</span><div class="c-bar-track"><div class="c-bar-fill" style="width:53%"></div></div><span class="c-bar-val">53</span></div>
+      </div>
+    </div>
+    <div class="label">C — Editorial / Minimal</div>
+  </div>
+
+  <!-- Style D: Data viz / analytics startup -->
+  <div>
+    <div class="style-d">
+      <div class="nav">
+        <span class="nav-brand">SOUNDSELF</span>
+        <span class="nav-pill">Live Dashboard</span>
+      </div>
+      <h2>Noa Kazes</h2>
+      <div class="sub">Music intelligence report · 147 tracks analyzed</div>
+      <div class="top-grid">
+        <div class="card"><div class="card-val" style="color:#818cf8">147</div><div class="card-lbl">Tracks</div></div>
+        <div class="card"><div class="card-val" style="color:#34d399">38</div><div class="card-lbl">Genres</div></div>
+        <div class="card"><div class="card-val" style="color:#f59e0b">12%</div><div class="card-lbl">Discovery</div></div>
+        <div class="card"><div class="card-val" style="color:#f472b6">2010s</div><div class="card-lbl">Era</div></div>
+      </div>
+      <div class="metric-row"><span class="metric-dot" style="background:#818cf8"></span><span class="metric-name">Energy</span><div class="metric-bar"><div class="metric-fill" style="width:82%;background:linear-gradient(90deg,#818cf8,#6366f1)"></div></div><span class="metric-val">82%</span></div>
+      <div class="metric-row"><span class="metric-dot" style="background:#34d399"></span><span class="metric-name">Danceability</span><div class="metric-bar"><div class="metric-fill" style="width:67%;background:linear-gradient(90deg,#34d399,#10b981)"></div></div><span class="metric-val">67%</span></div>
+      <div class="metric-row"><span class="metric-dot" style="background:#f59e0b"></span><span class="metric-name">Positivity</span><div class="metric-bar"><div class="metric-fill" style="width:53%;background:linear-gradient(90deg,#f59e0b,#d97706)"></div></div><span class="metric-val">53%</span></div>
+      <div class="metric-row"><span class="metric-dot" style="background:#f472b6"></span><span class="metric-name">Acousticness</span><div class="metric-bar"><div class="metric-fill" style="width:31%;background:linear-gradient(90deg,#f472b6,#ec4899)"></div></div><span class="metric-val">31%</span></div>
+    </div>
+    <div class="label">D — Data viz / Analytics Startup</div>
+  </div>
+
+</div>
+</body>
+</html>
