@@ -26,12 +26,9 @@ function ConnectingInner() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  const [debugUrl, setDebugUrl] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-
-    setDebugUrl(window.location.href);
 
     const start = async () => {
       try {
@@ -74,12 +71,24 @@ function ConnectingInner() {
         );
         wsRef.current = ws;
 
+        const knownSteps = new Set(STEPS.map(s => s.id));
+
+        const redirectToDashboard = () => {
+          if (cancelled) return;
+          setDone(true);
+          setTimeout(() => router.push("/dashboard"), 1800);
+        };
+
         ws.onmessage = (event) => {
           if (cancelled) return;
           try {
             const data: { step: string; message: string; progress: number } = JSON.parse(event.data);
 
             setProgress(data.progress ?? 0);
+
+            // Ignore pipeline-internal steps not shown in the UI
+            if (!knownSteps.has(data.step)) return;
+
             setStepMap((prev) => {
               const next = { ...prev };
               let found = false;
@@ -94,18 +103,32 @@ function ConnectingInner() {
               return next;
             });
 
-            if (data.step === "complete") {
-              setDone(true);
-              setTimeout(() => {
-                router.push("/dashboard");
-              }, 1800);
-            }
+            if (data.step === "complete") redirectToDashboard();
           } catch { /* ignore parse errors */ }
         };
 
-        ws.onerror = () => {
-          if (!cancelled) setError("Connection lost. Please refresh and try again.");
-        };
+        ws.onerror = () => { /* connection lost — polling fallback will redirect */ };
+
+        // Fallback: poll report status every 6 s in case WebSocket times out
+        const poll = setInterval(async () => {
+          if (cancelled) { clearInterval(poll); return; }
+          try {
+            const t = getToken();
+            if (!t) return;
+            const r = await fetch("/api/v1/user/me/report", {
+              headers: { Authorization: `Bearer ${t}` },
+            });
+            if (!r.ok) return;
+            const report = await r.json();
+            if (report?.status === "done") {
+              clearInterval(poll);
+              redirectToDashboard();
+            } else if (report?.status === "failed") {
+              clearInterval(poll);
+              if (!cancelled) setError("Analysis failed. Please try again.");
+            }
+          } catch { /* ignore */ }
+        }, 6000);
       } catch (err) {
         if (!cancelled)
           setError(err instanceof Error ? err.message : "Something went wrong.");

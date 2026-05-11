@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func as sqlfunc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.database import get_db
@@ -53,6 +53,60 @@ async def get_top_tracks(
         }
         for ut, track in result.all()
     ]
+
+
+@router.get("/liked")
+async def get_liked_tracks(
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Report)
+        .where(Report.user_id == current_user.id)
+        .order_by(Report.generated_at.desc())
+        .limit(1)
+    )
+    report = result.scalar_one_or_none()
+    if not report:
+        return {"total": 0, "tracks": []}
+
+    total_result = await db.execute(
+        select(sqlfunc.count())
+        .select_from(UserTrack)
+        .where(and_(UserTrack.report_id == report.id, UserTrack.term == "liked"))
+    )
+    total = total_result.scalar_one()
+
+    result = await db.execute(
+        select(UserTrack, Track)
+        .join(Track, UserTrack.track_id == Track.id)
+        .where(and_(UserTrack.report_id == report.id, UserTrack.term == "liked"))
+        .offset(offset)
+        .limit(limit)
+    )
+
+    return {
+        "total": total,
+        "tracks": [
+            {
+                "track": {
+                    "id": str(track.id),
+                    "spotify_id": track.spotify_id,
+                    "name": track.name,
+                    "artist": track.artist,
+                    "album": track.album,
+                    "release_year": track.release_year,
+                    "popularity": track.popularity,
+                    "image_url": track.image_url,
+                    "preview_url": track.preview_url,
+                    "has_lyrics": track.lyrics_raw is not None,
+                },
+            }
+            for ut, track in result.all()
+        ],
+    }
 
 
 @router.get("/{track_id}/deep-dive")

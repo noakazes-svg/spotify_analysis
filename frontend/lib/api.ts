@@ -58,6 +58,8 @@ export const api = {
   tracks: {
     top: (term: Term = "medium_term", limit = 20) =>
       req<TrackEntry[]>(`/api/v1/tracks/top?term=${term}&limit=${limit}`),
+    liked: (limit = 50, offset = 0) =>
+      req<LikedTracksResponse>(`/api/v1/tracks/liked?limit=${limit}&offset=${offset}`),
     deepDive: (trackId: string) =>
       req<TrackDetail>(`/api/v1/tracks/${trackId}/deep-dive`),
   },
@@ -117,6 +119,24 @@ export type TrackEntry = {
     preview_url: string | null;
     audio_features: Record<string, number> | null;
   };
+};
+
+export type LikedTrack = {
+  id: string;
+  spotify_id: string;
+  name: string;
+  artist: string;
+  album: string | null;
+  release_year: number | null;
+  popularity: number | null;
+  image_url: string | null;
+  preview_url: string | null;
+  has_lyrics: boolean;
+};
+
+export type LikedTracksResponse = {
+  total: number;
+  tracks: { track: LikedTrack }[];
 };
 
 export type TrackDetail = {

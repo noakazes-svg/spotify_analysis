@@ -19,6 +19,7 @@ async def run_pipeline(report_id: str, user_id: str) -> None:
     from ..db.models import Report, User
     from ..pipelines.spotify_ingest import run_spotify_ingestion
     from ..pipelines.lyrics_pipeline import run_lyrics_pipeline
+    from ..pipelines.liked_songs_pipeline import run_liked_songs_pipeline
     from ..core.spotify import refresh_spotify_token
 
     rid = UUID(report_id)
@@ -59,9 +60,19 @@ async def run_pipeline(report_id: str, user_id: str) -> None:
                 publish=pub,
             )
 
-            # ── Phase 2: Lyrics analysis via Genius ───────────────────────────
+            # ── Phase 2: Lyrics analysis via Genius (top tracks word freq) ─────
             await pub("emotions", "Mapping emotional patterns...", 88)
             await run_lyrics_pipeline(report_id, db, pub)
+
+            # ── Phase 2b: Liked songs + Shironet/Genius lyrics ────────────────
+            await pub("liked_songs", "Fetching your liked songs and lyrics...", 89)
+            await run_liked_songs_pipeline(
+                report_id=report_id,
+                user_id=user_id,
+                access_token=user.access_token,
+                db=db,
+                publish=pub,
+            )
 
             # ── Phase 3: Archetype + GPT-4o insights ──────────────────────────
             await pub("archetype", "Uncovering your music archetype...", 93)

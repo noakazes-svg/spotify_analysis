@@ -110,8 +110,9 @@ class GeniusClient:
 
     async def get_lyrics(self, url: str) -> str | None:
         """Scrape lyrics text from a Genius page URL."""
+        _ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
-            r = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
+            r = await client.get(url, headers={"User-Agent": _ua})
             if r.status_code != 200:
                 return None
         parser = _LyricsParser()

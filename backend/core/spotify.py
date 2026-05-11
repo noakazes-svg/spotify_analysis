@@ -66,6 +66,31 @@ class SpotifyClient:
         r.raise_for_status()
         return r.json()
 
+    async def get_artists(self, artist_ids: list[str]) -> list[dict]:
+        """Fetch artist data (including genres) for a list of artist IDs, 50 per call."""
+        all_artists: list[dict] = []
+        for i in range(0, len(artist_ids), 50):
+            batch = artist_ids[i:i + 50]
+            r = await self.http.get("/artists", params={"ids": ",".join(batch)})
+            r.raise_for_status()
+            all_artists.extend(a for a in r.json().get("artists", []) if a)
+        return all_artists
+
+    async def get_liked_songs(self, page_size: int = 50) -> list[dict]:
+        """Fetch all saved/liked tracks, paginating through all pages."""
+        items: list[dict] = []
+        offset = 0
+        while True:
+            r = await self.http.get("/me/tracks", params={"limit": page_size, "offset": offset})
+            r.raise_for_status()
+            data = r.json()
+            batch = data.get("items", [])
+            items.extend(batch)
+            if not data.get("next") or len(batch) < page_size:
+                break
+            offset += page_size
+        return items
+
 
 async def refresh_spotify_token(refresh_token: str) -> dict:
     """Exchange a refresh token for a new access token."""

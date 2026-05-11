@@ -27,7 +27,7 @@ python-dotenv==1.0.1
 
 # Lyrics (Phase 2)
 # lyricsgenius==3.0.1
-# beautifulsoup4==4.12.3
+beautifulsoup4==4.12.3
 
 # Shareable cards (Phase 2)
 # Pillow==11.0.0

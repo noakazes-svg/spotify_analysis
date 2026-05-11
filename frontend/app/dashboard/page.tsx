@@ -7,7 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
 } from "recharts";
-import { api, type Term, type TrackEntry, type ListeningDNA } from "@/lib/api";
+import { api, type Term, type TrackEntry, type ListeningDNA, type LikedTrack } from "@/lib/api";
 
 // ── Neon palette ─────────────────────────────────────────────────────────────
 const NEON = {
@@ -48,11 +48,10 @@ function EQBackground() {
         <motion.div
           key={i}
           className="flex-1 rounded-t-sm"
-          style={{ background: `linear-gradient(to top, ${NEON.pink}, ${NEON.violet})` }}
+          style={{ background: `linear-gradient(to top, ${NEON.pink}, ${NEON.violet})`, height: h, transformOrigin: "bottom" }}
           animate={{ scaleY: [1, 0.4 + Math.random() * 0.6, 0.6 + Math.random() * 0.4, 1] }}
           transition={{ duration: 1.2 + (i % 5) * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.04 }}
           initial={{ height: h }}
-          style={{ height: h, transformOrigin: "bottom" }}
         />
       ))}
     </div>
@@ -199,6 +198,10 @@ export default function DashboardPage() {
   const [tracks, setTracks] = useState<TrackEntry[]>([]);
   const [term, setTerm] = useState<Term>("medium_term");
   const [loading, setLoading] = useState(true);
+  const [likedTracks, setLikedTracks] = useState<LikedTrack[]>([]);
+  const [likedTotal, setLikedTotal] = useState(0);
+  const [likedOffset, setLikedOffset] = useState(0);
+  const [likedLoading, setLikedLoading] = useState(false);
 
   // Load on mount
   useEffect(() => {
@@ -208,8 +211,14 @@ export default function DashboardPage() {
         setUser(userData);
         setReport(reportData);
         if (reportData?.id) {
-          const td = await api.tracks.top("medium_term", 20);
+          const [td, liked] = await Promise.all([
+            api.tracks.top("medium_term", 20),
+            api.tracks.liked(50, 0),
+          ]);
           setTracks(td);
+          setLikedTracks(liked.tracks.map(e => e.track));
+          setLikedTotal(liked.total);
+          setLikedOffset(50);
         }
       } catch {
         router.push("/");
@@ -237,6 +246,18 @@ export default function DashboardPage() {
     }, 3000);
     return () => clearInterval(iv);
   }, [report]);
+
+  const loadMoreLiked = async () => {
+    if (likedLoading || likedTracks.length >= likedTotal) return;
+    setLikedLoading(true);
+    try {
+      const res = await api.tracks.liked(50, likedOffset);
+      setLikedTracks(prev => [...prev, ...res.tracks.map(e => e.track)]);
+      setLikedOffset(prev => prev + 50);
+    } finally {
+      setLikedLoading(false);
+    }
+  };
 
   const dna = report?.listening_dna as (ListeningDNA & {
     genre_counts?: { name: string; count: number }[];
@@ -322,7 +343,7 @@ export default function DashboardPage() {
             {user?.display_name?.split(" ")[0] ?? "Your"}<br />Universe
           </h1>
           <div className="flex flex-wrap gap-10">
-            <StatBadge value={String(dna?.total_unique_tracks ?? "—")} label="Tracks Analyzed" color={NEON.pink} />
+            <StatBadge value={likedTotal > 0 ? String(likedTotal) : String(dna?.total_unique_tracks ?? "—")} label="Liked Songs" color={NEON.pink} />
             <StatBadge value={String(dna?.genre_count ?? "—")} label="Genres" color={NEON.violet} />
             <StatBadge value={`${Math.round((dna?.discovery_rate ?? 0) * 100)}%`} label="Niche Score" color={NEON.indigo} />
             <StatBadge value={dna?.dominant_decade ?? "—"} label="Dominant Era" color={NEON.blue} />
@@ -451,7 +472,7 @@ export default function DashboardPage() {
                 </Section>
               )}
 
-              {(dna.popularity_buckets?.length ?? 0) > 0 && (
+              {(dna.popularity_buckets?.some(b => b.count > 0) ?? false) && (
                 <Section delay={0.3}>
                   <Card className="p-6">
                     <SectionTitle>Mainstream vs Niche</SectionTitle>
@@ -475,6 +496,57 @@ export default function DashboardPage() {
                 </Section>
               )}
             </div>
+
+            {/* ── Liked Songs ──────────────────────────────────────────────── */}
+            {likedTotal > 0 && (
+              <Section delay={0.33}>
+                <Card className="p-6" glow="pink">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-[11px] uppercase tracking-[3px] text-white/30">Liked Songs</h2>
+                    <span className="text-[10px] text-white/20 uppercase tracking-widest">{likedTotal} songs</span>
+                  </div>
+                  <div className="space-y-1">
+                    {likedTracks.map((track, i) => (
+                      <motion.div
+                        key={track.spotify_id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: Math.min(i * 0.015, 0.5) }}
+                        className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors group"
+                      >
+                        <span className="text-[10px] tabular-nums w-5 text-right text-white/15">{i + 1}</span>
+                        {track.image_url ? (
+                          <img src={track.image_url} alt="" className="w-9 h-9 rounded-lg object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06]" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate text-white/80 group-hover:text-white transition-colors">{track.name}</p>
+                          <p className="text-xs text-white/25 truncate">{track.artist}</p>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-3">
+                          {track.release_year && (
+                            <span className="text-[10px] text-white/15">{track.release_year}</span>
+                          )}
+                          {track.has_lyrics && (
+                            <span className="text-[9px] uppercase tracking-widest text-violet-400/50 border border-violet-400/20 rounded px-1.5 py-0.5">lyrics</span>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  {likedTracks.length < likedTotal && (
+                    <button
+                      onClick={loadMoreLiked}
+                      disabled={likedLoading}
+                      className="mt-4 w-full py-2.5 rounded-xl border border-white/[0.06] text-[10px] uppercase tracking-widest text-white/25 hover:text-white/50 hover:border-white/10 transition-all disabled:opacity-40"
+                    >
+                      {likedLoading ? "Loading..." : `Load more (${likedTotal - likedTracks.length} remaining)`}
+                    </button>
+                  )}
+                </Card>
+              </Section>
+            )}
 
             {/* ── Top Tracks ───────────────────────────────────────────────── */}
             <Section delay={0.35}>
@@ -552,7 +624,7 @@ export default function DashboardPage() {
                 <Card className="p-8 text-center border border-pink-500/10 bg-pink-500/[0.02]">
                   <p className="text-xs uppercase tracking-[3px] text-white/15 mb-2">Lyrics Universe</p>
                   <p className="text-sm text-white/25">
-                    Add your Genius API token to <code className="text-pink-400/60">.env</code> to unlock lyrics word analysis
+                    Lyrics are being processed — check back after running the pipeline
                   </p>
                 </Card>
               </Section>
