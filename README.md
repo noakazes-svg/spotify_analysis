@@ -2,9 +2,6 @@
 
 A data engineering project that collects, cleans, and analyzes personal Spotify listening data — including lyrics from both English (Genius) and Hebrew (Shironet) sources.
 
-## Interview Preparation
-See [INTERVIEW_PREP.md](INTERVIEW_PREP.md) — project story, what was easy vs. hard, and Q&A for a data analyst interview.
-
 ---
 
 ## Project Structure
