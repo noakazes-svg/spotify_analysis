@@ -76,6 +76,46 @@ class SpotifyClient:
             all_artists.extend(a for a in r.json().get("artists", []) if a)
         return all_artists
 
+    async def get_user_playlists(self) -> list[dict]:
+        """Fetch all playlists the user owns or follows."""
+        items: list[dict] = []
+        offset = 0
+        while True:
+            r = await self.http.get("/me/playlists", params={"limit": 50, "offset": offset})
+            r.raise_for_status()
+            data = r.json()
+            batch = [p for p in data.get("items", []) if p]
+            items.extend(batch)
+            if not data.get("next") or len(batch) < 50:
+                break
+            offset += 50
+        return items
+
+    async def get_playlist_tracks(self, playlist_id: str) -> list[dict]:
+        """Fetch all tracks from a playlist (skips local/unavailable tracks)."""
+        items: list[dict] = []
+        offset = 0
+        while True:
+            r = await self.http.get(
+                f"/playlists/{playlist_id}/tracks",
+                params={
+                    "limit": 100,
+                    "offset": offset,
+                    "fields": "next,items(track(id,name,artists,album(name,release_date,images),duration_ms,popularity,preview_url))",
+                },
+            )
+            r.raise_for_status()
+            data = r.json()
+            batch = [
+                item for item in data.get("items", [])
+                if item and item.get("track") and item["track"].get("id")
+            ]
+            items.extend(batch)
+            if not data.get("next") or len(data.get("items", [])) < 100:
+                break
+            offset += 100
+        return items
+
     async def get_liked_songs(self, page_size: int = 50) -> list[dict]:
         """Fetch all saved/liked tracks, paginating through all pages."""
         items: list[dict] = []

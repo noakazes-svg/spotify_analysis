@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.spotify import SpotifyClient
-from ..db.models import Report, Track, UserTrack
+from ..db.models import Report, Track, ReportTrack
 
 TERMS = ["short_term", "medium_term", "long_term"]
 TERM_WEIGHT = {"short_term": 3.0, "medium_term": 2.0, "long_term": 1.0}
@@ -98,7 +98,7 @@ async def run_spotify_ingestion(
                 track.audio_features = audio_features
 
             for term in data["terms"]:
-                db.add(UserTrack(
+                db.add(ReportTrack(
                     user_id=uid,
                     track_id=track.id,
                     report_id=rid,

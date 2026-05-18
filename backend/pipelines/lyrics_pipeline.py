@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import get_settings
 from ..core.genius import GeniusClient
-from ..db.models import Report, Track, UserTrack
+from ..db.models import Report, Track, ReportTrack
 
 settings = get_settings()
 
@@ -36,10 +36,10 @@ async def run_lyrics_pipeline(
 
     # Load top short-term tracks for this report
     result = await db.execute(
-        select(UserTrack, Track)
-        .join(Track, UserTrack.track_id == Track.id)
-        .where(UserTrack.report_id == rid, UserTrack.term == "short_term")
-        .order_by(UserTrack.rank)
+        select(ReportTrack, Track)
+        .join(Track, ReportTrack.track_id == Track.id)
+        .where(ReportTrack.report_id == rid, ReportTrack.term == "short_term")
+        .order_by(ReportTrack.rank)
         .limit(_MAX_TRACKS)
     )
     rows = result.all()

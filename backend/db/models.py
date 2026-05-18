@@ -29,7 +29,7 @@ class User(Base):
     last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     reports: Mapped[list[Report]] = relationship("Report", back_populates="user", cascade="all, delete-orphan")
-    user_tracks: Mapped[list[UserTrack]] = relationship("UserTrack", back_populates="user", cascade="all, delete-orphan")
+    report_tracks: Mapped[list[ReportTrack]] = relationship("ReportTrack", back_populates="user", cascade="all, delete-orphan")
 
 
 class Report(Base):
@@ -46,7 +46,7 @@ class Report(Base):
     user: Mapped[User] = relationship("User", back_populates="reports")
     insights: Mapped[list[Insight]] = relationship("Insight", back_populates="report", cascade="all, delete-orphan")
     share_cards: Mapped[list[ShareCard]] = relationship("ShareCard", back_populates="report", cascade="all, delete-orphan")
-    user_tracks: Mapped[list[UserTrack]] = relationship("UserTrack", back_populates="report", cascade="all, delete-orphan")
+    report_tracks: Mapped[list[ReportTrack]] = relationship("ReportTrack", back_populates="report", cascade="all, delete-orphan")
     archetype: Mapped[Optional[Archetype]] = relationship("Archetype", foreign_keys=[archetype_id])
 
 
@@ -65,19 +65,32 @@ class Track(Base):
     preview_url: Mapped[Optional[str]] = mapped_column(Text)
     image_url: Mapped[Optional[str]] = mapped_column(Text)
     audio_features: Mapped[Optional[dict]] = mapped_column(JSON)
-    lyrics_raw: Mapped[Optional[str]] = mapped_column(Text)
-    lyrics_cleaned: Mapped[Optional[str]] = mapped_column(Text)
-    lyrics_fetched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    nlp_processed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    user_tracks: Mapped[list[UserTrack]] = relationship("UserTrack", back_populates="track")
+    report_tracks: Mapped[list[ReportTrack]] = relationship("ReportTrack", back_populates="track")
+    lyrics: Mapped[Optional[TrackLyrics]] = relationship(
+        "TrackLyrics", back_populates="track", uselist=False,
+        cascade="all, delete-orphan", lazy="selectin",
+    )
     emotions: Mapped[Optional[TrackEmotion]] = relationship(
         "TrackEmotion", back_populates="track", uselist=False, cascade="all, delete-orphan"
     )
 
 
-class UserTrack(Base):
-    __tablename__ = "user_tracks"
+class TrackLyrics(Base):
+    __tablename__ = "track_lyrics"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    track_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("tracks.id"), unique=True, index=True)
+    lyrics_raw: Mapped[Optional[str]] = mapped_column(Text)
+    lyrics_cleaned: Mapped[Optional[str]] = mapped_column(Text)
+    lyrics_fetched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    nlp_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    track: Mapped[Track] = relationship("Track", back_populates="lyrics")
+
+
+class ReportTrack(Base):
+    __tablename__ = "listening_snapshot"
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
     user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id"), index=True)
@@ -87,9 +100,9 @@ class UserTrack(Base):
     rank: Mapped[Optional[int]] = mapped_column(Integer)
     play_weight: Mapped[float] = mapped_column(Float, default=1.0)
 
-    user: Mapped[User] = relationship("User", back_populates="user_tracks")
-    track: Mapped[Track] = relationship("Track", back_populates="user_tracks")
-    report: Mapped[Report] = relationship("Report", back_populates="user_tracks")
+    user: Mapped[User] = relationship("User", back_populates="report_tracks")
+    track: Mapped[Track] = relationship("Track", back_populates="report_tracks")
+    report: Mapped[Report] = relationship("Report", back_populates="report_tracks")
 
 
 class TrackEmotion(Base):

@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     spotify_redirect_uri: str = "http://127.0.0.1:8000/api/v1/auth/spotify/callback"
     spotify_scopes: str = (
         "user-read-private user-read-email user-top-read "
-        "user-read-recently-played user-library-read"
+        "user-read-recently-played user-library-read "
+        "playlist-read-private playlist-read-collaborative"
     )
 
     # External APIs (Phase 2)

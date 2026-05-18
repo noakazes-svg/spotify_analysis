@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.spotify import SpotifyClient
 from ..core.genius import GeniusClient
 from ..core.config import get_settings
-from ..db.models import Report, Track, UserTrack
+from ..db.models import Report, Track, ReportTrack, TrackLyrics
 
 Publish = Optional[Callable[[str, str, int], Awaitable[None]]]
 
@@ -126,7 +126,7 @@ async def run_liked_songs_pipeline(
         elif audio_features and not track.audio_features:
             track.audio_features = audio_features
 
-        db.add(UserTrack(
+        db.add(ReportTrack(
             user_id=uid,
             track_id=track.id,
             report_id=rid,
@@ -155,8 +155,8 @@ async def run_liked_songs_pipeline(
     sem = asyncio.Semaphore(5)  # 5 concurrent requests (Genius rate-limit friendly)
 
     async def _fetch(track: Track) -> tuple[str, str | None]:
-        if track.lyrics_raw:
-            return track.spotify_id, track.lyrics_raw
+        if track.lyrics and track.lyrics.lyrics_raw:
+            return track.spotify_id, track.lyrics.lyrics_raw
         if not genius:
             return track.spotify_id, None
         async with sem:
@@ -178,8 +178,11 @@ async def run_liked_songs_pipeline(
     for track in tracks_in_db:
         lyr = lyrics_map.get(track.spotify_id)
         if lyr:
-            track.lyrics_raw = lyr
-            track.lyrics_fetched_at = now
+            if track.lyrics:
+                track.lyrics.lyrics_raw = lyr
+                track.lyrics.lyrics_fetched_at = now
+            else:
+                db.add(TrackLyrics(track_id=track.id, lyrics_raw=lyr, lyrics_fetched_at=now))
             found += 1
             all_lyrics.append(lyr)
     failed = total - found

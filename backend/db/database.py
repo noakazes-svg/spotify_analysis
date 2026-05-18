@@ -1,3 +1,4 @@
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
@@ -13,13 +14,21 @@ settings = get_settings()
 def _make_engine():
     url = settings.database_url
     if url.startswith("sqlite"):
-        # SQLite needs special pool settings for async
-        return create_async_engine(
+        engine = create_async_engine(
             url,
             echo=settings.debug,
             connect_args={"check_same_thread": False},
             poolclass=StaticPool,
         )
+
+        # Enable foreign key enforcement for every connection
+        @event.listens_for(engine.sync_engine, "connect")
+        def _set_sqlite_pragma(dbapi_conn, _):
+            cursor = dbapi_conn.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        return engine
     return create_async_engine(
         url,
         echo=settings.debug,
